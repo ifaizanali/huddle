@@ -13,8 +13,7 @@ const cred = {
   cert
 }
 
-const httpsServer = https.createServer(cred, app)
-const io = require('socket.io')(httpsServer)
+
 
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
@@ -27,6 +26,10 @@ app.get('/:room', (req, res) => {
   res.render('room', { roomId: req.params.room })
 })
 
+const httpsServer = https.createServer(cred, app)
+
+const io = require('socket.io')(httpsServer);
+
 io.on('connection', socket => {
   socket.on('join-room', (roomId, userId) => {
     socket.join(roomId)
@@ -38,4 +41,5 @@ io.on('connection', socket => {
   })
 })
 
-httpsServer.listen(3000)
+app.listen(3000, () => {console.log('running on 3000')})
+httpsServer.listen(8443)
