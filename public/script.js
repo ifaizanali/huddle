@@ -2,24 +2,24 @@ const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined, {
   host: '/',
-  port: '3001'
+  port: '3001',
 })
-const myVideo = document.createElement('video')
+
 
 const peers = {}
 
 const config = {
   audio: true,
-  video: true
+  video: true,
 }
+
+let screen = false;
 
 var myStream;
 
-navigator.mediaDevices.getUserMedia({
-  video: true,
-  audio: true
-}).then(stream => {
-  myStream = stream
+
+function shareStream(stream) {
+  const myVideo = document.createElement('video')
   addVideoStream(myVideo, stream)
 
   myPeer.on('call', call => {
@@ -33,6 +33,15 @@ navigator.mediaDevices.getUserMedia({
   socket.on('user-connected', userId => {
     connectToNewUser(userId, stream)
   })
+}
+
+
+navigator.mediaDevices.getUserMedia({
+  video: true,
+  audio: true
+}).then(stream => {
+  myStream = stream
+  shareStream(myStream)
 })
 
 socket.on('user-disconnected', userId => {
@@ -81,5 +90,25 @@ document.getElementById('control-video').addEventListener('click', (event) => {
   }
   else {
     document.getElementById('control-video').innerHTML = "Start Video"
+  }
+})
+
+document.getElementById('control-screen').addEventListener('click', (event) => {
+  if(screen === false)
+  {
+    navigator.mediaDevices.getDisplayMedia({
+      video: {
+        cursor: "always"
+      },
+      audio: false
+    }).then(stream => {
+      shareStream(stream)
+      socket.emit('join-room', ROOM_ID, 50)
+      screen = true
+    })
+
+  }
+  else {
+    screen = false
   }
 })
